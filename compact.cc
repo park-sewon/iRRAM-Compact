@@ -11,13 +11,51 @@ class OneDCompact
 public:
   std::function< bool ( REAL, int ) > cfun;
 
+  // create the emptyset
   OneDCompact();
-  
+
+  // create a singleton
   OneDCompact(REAL);  
 
+  // create a closed interval
   OneDCompact(REAL, REAL);  
 
 };
+
+
+// functionals
+
+// pointwise conjunction for binary Boolean functions
+template <typename T, typename R>
+std::function<bool ( T, R ) > pw_conjunction (std::function<bool ( T, R ) > f, std::function<bool ( T, R ) > g)
+{
+  return
+    [=](T x, R y) -> bool {
+      return (f(x, y) && g(x, y));
+    };
+}
+
+// pointwise disjunction for binary Boolean functions
+template <typename T, typename R>
+std::function<bool ( T, R ) > pw_disjunction (std::function<bool ( T, R ) > f, std::function<bool ( T, R ) > g)
+{
+  return
+    [=](T x, R y) -> bool {
+      return (f(x,y) || g(x, y));
+    };
+}
+
+
+
+// make the fuzzy char function for the emptyset
+std::function<bool (REAL, int) > empty ()
+{
+  return
+    [=](REAL y, int p) -> bool {
+	return false;
+    };
+}
+
 
 // make the fuzzy char function for the singleton {x}
 std::function<bool (REAL, int) > singleton (REAL x)
@@ -29,7 +67,8 @@ std::function<bool (REAL, int) > singleton (REAL x)
 	return true;
       else
 	return false;
-    };}
+    };
+}
 
 
 
@@ -48,7 +87,11 @@ std::function<bool (REAL, int) > interval (REAL x, REAL y)
 	 };
 }
 	   
-  
+
+OneDCompact::OneDCompact()
+{
+  cfun = empty(); 
+}
 
 OneDCompact::OneDCompact(REAL x)
 {
@@ -59,19 +102,22 @@ OneDCompact::OneDCompact(REAL x, REAL y)
 {
   cfun = interval(x, y); 
 }
-
-
-
+  
 
 // Primitive Operations: 
 OneDCompact op_intersection(OneDCompact x, OneDCompact y)
 {
-  return OneDCompact(0);
+  OneDCompact z;
+  z.cfun = pw_conjunction<REAL, int>(x.cfun, y.cfun);
+  return z;
 }
 
 OneDCompact op_union(OneDCompact x, OneDCompact y)
 {
-  return OneDCompact(0);
+  OneDCompact z;
+  z.cfun = pw_disjunction(x.cfun, y.cfun);
+  return z;
+
 }
 
 bool is_member_of(REAL x, OneDCompact y, int p)
@@ -82,6 +128,12 @@ bool is_member_of(REAL x, OneDCompact y, int p)
 
 
 
+
+
+
+
+
+// main function for testing
 void compute()
 {
 
