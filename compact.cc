@@ -1,14 +1,22 @@
+#include <array>
+
 #include "iRRAM/lib.h"
 #include "iRRAM/core.h"
 #include "iRRAM.h"
 using namespace iRRAM;
 
+#include "euclidean.h"
+
+
+
+// TODO: make class Compact that includes common vars and methods of Path and Surface, and make them inherit Compact
+
+
 // The set of compact subsets of 1-dimensional real line
 class OneDCompact
 {
-
-  
 public:
+  // characteristic function
   std::function< bool ( REAL, int ) > cfun;
 
   // create the emptyset
@@ -19,7 +27,6 @@ public:
 
   // create a closed interval
   OneDCompact(REAL, REAL);  
-
 };
 
 
@@ -102,7 +109,9 @@ OneDCompact::OneDCompact(REAL x, REAL y)
 {
   cfun = interval(x, y); 
 }
-  
+
+
+
 
 // Primitive Operations: 
 OneDCompact op_intersection(OneDCompact x, OneDCompact y)
