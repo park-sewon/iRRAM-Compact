@@ -6,7 +6,7 @@ CXX = g++
 CPPFLAGS = -I./include
 CXXFLAGS = -g -O2 -std=c++14 -mpc80
 LDFLAGS = -Xlinker -rpath -Xlinker ./lib
-LDLIBS = -L./lib -lmpfr -lgmp -lm -lpthread -lirram
+LDLIBS = -L./lib -lmpfr -lgmp -lm -lpthread -lirram -lpng
 
 
 BIN = compact path
