@@ -1,3 +1,5 @@
+#pragma once
+
 #include <png.h>
 
 class Palette {
