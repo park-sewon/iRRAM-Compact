@@ -53,6 +53,8 @@ public:
   // membership test for point with precision 2^-p
   // in accordance to the Ko compatibility
   bool member(Point<N> point, int p) {
+    single_valued code;
+
     // check if previously found pArg is viable
     // if not, increase the precision
     if(this->p < p) this->increasePrecision(p);
