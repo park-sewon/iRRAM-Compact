@@ -1,3 +1,4 @@
+#pragma once
 
 // Euclidean space using alias declaration
 template <int N>
@@ -10,6 +11,10 @@ using HyperCube = IR<N>;
 // just alias
 template <int N>
 using Point = IR<N>;
+
+// Dyadic point
+template <int N>
+using DyadicPoint = std::array<DYADIC, N>;
 
 
 #define ZERO    RATIONAL(INTEGER(0),INTEGER(1))
@@ -27,6 +32,30 @@ RATIONAL Exp(int n)
     return 1;
   else
     return (RATIONAL(INTEGER(1), INTEGER(1) << -n));
+}
+
+template <int N>
+IR<N> IR_origin()
+{
+  std::array<REAL, N> res;
+  for (int i = 0; i < N; i++)
+    res = REAL(0);
+  return res;
+}
+
+// metric
+template <int N>
+REAL IR_d(IR<N> x, IR<N> y)
+{
+  REAL sum = 0;
+  REAL a, b;
+  for (int i = 0; i < N; i++)
+  {
+    a = x[i];
+    b = y[i];
+    sum += (a - b) * (a - b);
+  }
+  return sqrt(sum);
 }
 
 // Copied from iRRAM/src/stack.cc and modified a little.
@@ -151,26 +180,68 @@ int module(std::function<REAL(REAL)> f, const REAL &x, int p)
 }
 
 
-template <int N>
-IR<N> IR_origin()
-{
-  std::array<REAL, N> res;
-  for (int i = 0; i < N; i++)
-    res = REAL(0);
-  return res;
+
+
+// Return: the minimum q such that
+//         for any hypercube H of size 2^-q with corners aligned by 2^-q in hypercube H',
+//         f(H) is subset of a hypercube of size 2^-p
+// f: R^M -> R^N
+// H' is given with the center c and side length 2^-s
+template<int M, int N>
+int module2_(std::function<Point<N>(Point<M>)> f, int p, const HyperCube<M> &c, int s) {
+  sizetype err;
+
+  // create H
+  HyperCube<M> box = c;
+  for(REAL &u : box) {
+    sizetype_set(err, 1, -s-1);
+    u.seterror(err);
+  }
+
+  // check if f(H') is subset of a hypercube
+  DYADIC d;
+  bool success = true;
+  try {
+    single_valued code;
+
+    HyperCube<N> fBox = f(box);
+    for(REAL &v : fBox) d = approx(v, -p-1);
+  } catch (Iteration it) { success = false; }
+
+  // return current one if success
+  if(success) return s;
+
+  // bisection on failure, total 2^M sub-hypercubes
+  int result = s+1;
+  HyperCube<M> offset, newCenter;
+  REAL halfLen = Exp(-s-1);
+  offset.fill(0);
+  for(int k=0 ; k<(1<<M) ; k++) {
+    // configure offset
+    // If the j'th bit of k is 0, we choose the left half section on j'th dimension
+    // Otherwise, the right half section.
+    for(int j=0 ; j<M ; j++) {
+      int sign = ((k & (1<<j))<<1)-1;     // -1 on left section, 1 otherwise
+      offset[j] = REAL(INTEGER(sign)) * halfLen;
+    }
+
+    // configure point
+    for(int j=0 ; j<M ; j++) newCenter[j] = c[j] + offset[j];
+
+    // find the required precision
+    result = max(result, module2_<M,N>(f, p, newCenter, s+1));
+  }
+
+  return result;
 }
 
-// metric
-template <int N>
-REAL IR_d(IR<N> x, IR<N> y)
-{
-  REAL sum = 0;
-  REAL a, b;
-  for (int i = 0; i < N; i++)
-  {
-    a = x[i];
-    b = y[i];
-    sum += (a - b) * (a - b);
-  }
-  return sqrt(sum);
+// Return: the minimum q such that
+//         for any hypercube H of size 2^-q with corners aligned by 2^-q in [0,1]^M,
+//         f(H) is subset of a hypercube of size 2^-p
+// f: R^M -> R^N
+template<int M, int N>
+int module2(std::function<Point<N>(Point<M>)> f, int p) {
+  HyperCube<M> c;
+  c.fill(REAL(1) / REAL(2));
+  return module2_<M,N>(f,p,c,0);
 }
