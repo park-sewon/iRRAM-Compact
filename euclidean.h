@@ -1,5 +1,10 @@
 #pragma once
 
+#include <array>
+#include "iRRAM.h"
+
+using namespace iRRAM;
+
 // Euclidean space using alias declaration
 template <int N>
 using IR = std::array<REAL, N>;

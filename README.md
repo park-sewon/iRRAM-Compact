@@ -18,5 +18,5 @@ Also iRRAM: https://github.com/norbert-mueller/iRRAM
 ## Usage
 
 ```bash
-make && ./test
+make test && ./test
 ```

@@ -9,13 +9,15 @@ LDFLAGS = -Xlinker -rpath -Xlinker ./lib
 LDLIBS = -L./lib -lmpfr -lgmp -lm -lpthread -lirram -lpng
 
 
-BIN = compact path
+BIN =  test
+
+all: $(BIN)
 
 # compact: compact.cc
 # path: path.cc
 test: test.cc
+test2: test2.cc
 
-all: $(BIN)
 
 # maintainer-clean: distclean
 # distclean: clean
